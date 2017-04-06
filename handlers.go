@@ -66,15 +66,18 @@ func lineReply(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//fmt.Println(reply.Events[0].Message.Text)
-	reply.Send("pek")
+	//reply.Send("pek")
+	reply.SendImage()
 	w.WriteHeader(200)
 }
 
 func keyWordMatch(text string) bool {
-	matched, err := regexp.MatchString("pek", strings.ToLower(text))
+	rx, err := regexp.Compile(`^\/pic`)
 	if err != nil {
 		log.Println(err)
 	}
+
+	matched := rx.MatchString(strings.ToLower(text))
 
 	return matched
 }

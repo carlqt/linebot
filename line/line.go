@@ -30,8 +30,10 @@ type Message struct {
 }
 
 type SendMessage struct {
-	Text string `json:"text"`
-	Type string `json:"type"`
+	Text               string `json:"text"`
+	Type               string `json:"type"`
+	OriginalContentURL string `json:"originalContentUrl"`
+	PreviewImageURL    string `json:"previewImageUrl"`
 }
 
 type SendMessages struct {
@@ -48,6 +50,38 @@ func (r Reply) Send(m string) {
 			SendMessage{
 				Text: m,
 				Type: "text",
+			},
+		},
+	}
+
+	marshal, err := json.Marshal(messages)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client := http.Client{}
+	req, _ := http.NewRequest("POST", replyURL, bytes.NewBuffer(marshal))
+	req.Header.Add("Authorization", "Bearer "+accessToken)
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer resp.Body.Close()
+	dumpOut(resp)
+}
+
+func (r Reply) SendImage() {
+	messages := SendMessages{
+		ReplyToken: r.Events[0].ReplyToken,
+		Message: []SendMessage{
+			SendMessage{
+				OriginalContentURL: "https://imgflip.com/s/meme/Success-Kid.jpg",
+				PreviewImageURL:    "https://connorlenahan.files.wordpress.com/2014/07/success-kid.jpg",
+				Type:               "image",
 			},
 		},
 	}
