@@ -43,6 +43,14 @@ type SendMessages struct {
 
 const lineURL = "https://api.line.me/v2/bot/message/reply"
 
+func lineRequest(verb string, body []byte) *http.Request {
+	req, _ := http.NewRequest(verb, replyURL, bytes.NewBuffer(body))
+	req.Header.Add("Authorization", "Bearer "+accessToken)
+	req.Header.Add("Content-Type", "application/json")
+
+	return req
+}
+
 func (r Reply) Send(m string) {
 	messages := SendMessages{
 		ReplyToken: r.Events[0].ReplyToken,
@@ -61,9 +69,7 @@ func (r Reply) Send(m string) {
 	}
 
 	client := http.Client{}
-	req, _ := http.NewRequest("POST", replyURL, bytes.NewBuffer(marshal))
-	req.Header.Add("Authorization", "Bearer "+accessToken)
-	req.Header.Add("Content-Type", "application/json")
+	req := lineRequest("POST", marshal)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -71,31 +77,28 @@ func (r Reply) Send(m string) {
 	}
 
 	defer resp.Body.Close()
-	dumpOut(resp)
+	//dumpOut(resp)
 }
 
-func (r Reply) SendImage() {
+func (r Reply) SendImage(imageURL string) {
 	messages := SendMessages{
 		ReplyToken: r.Events[0].ReplyToken,
 		Message: []SendMessage{
 			SendMessage{
-				OriginalContentURL: "https://imgflip.com/s/meme/Success-Kid.jpg",
-				PreviewImageURL:    "https://connorlenahan.files.wordpress.com/2014/07/success-kid.jpg",
+				OriginalContentURL: imageURL,
+				PreviewImageURL:    imageURL,
 				Type:               "image",
 			},
 		},
 	}
 
 	marshal, err := json.Marshal(messages)
-
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	client := http.Client{}
-	req, _ := http.NewRequest("POST", replyURL, bytes.NewBuffer(marshal))
-	req.Header.Add("Authorization", "Bearer "+accessToken)
-	req.Header.Add("Content-Type", "application/json")
+	req := lineRequest("POST", marshal)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -103,7 +106,7 @@ func (r Reply) SendImage() {
 	}
 
 	defer resp.Body.Close()
-	dumpOut(resp)
+	//dumpOut(resp)
 }
 
 func dumpOut(r *http.Response) {

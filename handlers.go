@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/carlqt/linebot/bing"
 	"github.com/carlqt/linebot/line"
 )
 
@@ -57,7 +58,6 @@ func replyHandler(next http.Handler) http.Handler {
 }
 
 func lineReply(w http.ResponseWriter, r *http.Request) {
-	// reply only if the text part has @gif and replyToken is present
 	var reply line.Reply
 	reply, _ = r.Context().Value("replyStruct").(line.Reply)
 
@@ -65,9 +65,8 @@ func lineReply(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//fmt.Println(reply.Events[0].Message.Text)
-	//reply.Send("pek")
-	reply.SendImage()
+	reply.SendImage("https://tse4.mm.bing.net/th?id=OIP.V65QWXWfUw6w9trOmGdCegCwCx&pid=Api")
+	bing.SearchImage("cry")
 	w.WriteHeader(200)
 }
 
