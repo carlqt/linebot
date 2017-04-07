@@ -3,6 +3,7 @@ package debug
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -19,20 +20,9 @@ func dumpOut(r *http.Response) {
 	log.Println(string(dump[:]))
 }
 
-func jsonRequest(r *http.Request) {
+func JsonDump(r io.ReadCloser) {
 	var out bytes.Buffer
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	json.Indent(&out, body, "", "  ")
-	out.WriteTo(os.Stdout)
-}
-
-func jsonResponse(r *http.Response) {
-	var out bytes.Buffer
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := ioutil.ReadAll(r)
 	if err != nil {
 		log.Fatal(err)
 	}
