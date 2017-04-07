@@ -3,10 +3,8 @@ package line
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -23,7 +21,7 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
-type Reply struct {
+type WebhookResponse struct {
 	Events []Event `json:"events"`
 }
 
@@ -39,19 +37,17 @@ type Message struct {
 	Text string `json:"text"`
 }
 
-type SendMessage struct {
+type ReplyMessage struct {
 	Text               string `json:"text"`
 	Type               string `json:"type"`
 	OriginalContentURL string `json:"originalContentUrl"`
 	PreviewImageURL    string `json:"previewImageUrl"`
 }
 
-type SendMessages struct {
-	Message    []SendMessage `json:"messages"`
-	ReplyToken string        `json:"replyToken"`
+type Reply struct {
+	Messages   []ReplyMessage `json:"messages"`
+	ReplyToken string         `json:"replyToken"`
 }
-
-const lineURL = "https://api.line.me/v2/bot/message/reply"
 
 func lineRequest(verb string, body []byte) *http.Request {
 	req, _ := http.NewRequest(verb, replyURL, bytes.NewBuffer(body))
@@ -61,21 +57,19 @@ func lineRequest(verb string, body []byte) *http.Request {
 	return req
 }
 
-func (r Reply) Send(m string) {
-	messages := SendMessages{
-		ReplyToken: r.Events[0].ReplyToken,
-		Message: []SendMessage{
-			SendMessage{
-				Text: m,
-				Type: "text",
-			},
+func (r Reply) SendImage(imageURL string, replyToken string) {
+	rMsg := newImageReplyMessage(imageURL)
+
+	reply := Reply{
+		ReplyToken: replyToken,
+		Messages: []ReplyMessage{
+			rMsg,
 		},
 	}
 
-	marshal, err := json.Marshal(messages)
-
+	marshal, err := json.Marshal(reply)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	client := http.Client{}
@@ -83,58 +77,17 @@ func (r Reply) Send(m string) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	defer resp.Body.Close()
 	//dumpOut(resp)
 }
 
-func (r Reply) SendImage(imageURL string) {
-	messages := SendMessages{
-		ReplyToken: r.Events[0].ReplyToken,
-		Message: []SendMessage{
-			SendMessage{
-				OriginalContentURL: imageURL,
-				PreviewImageURL:    imageURL,
-				Type:               "image",
-			},
-		},
+func newImageReplyMessage(u string) ReplyMessage {
+	return ReplyMessage{
+		OriginalContentURL: u,
+		PreviewImageURL:    u,
+		Type:               "image",
 	}
-
-	marshal, err := json.Marshal(messages)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client := http.Client{}
-	req := lineRequest("POST", marshal)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer resp.Body.Close()
-	//dumpOut(resp)
-}
-
-func dumpOut(r *http.Response) {
-	dump, err := httputil.DumpResponse(r, true)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println(string(dump[:]))
-}
-
-func jsonRequest(r *http.Request) {
-	var out bytes.Buffer
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	json.Indent(&out, body, "", "  ")
-	out.WriteTo(os.Stdout)
 }

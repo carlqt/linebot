@@ -1,13 +1,10 @@
 package bing
 
 import (
-	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
-	"net/http/httputil"
 	"os"
 	"time"
 
@@ -73,24 +70,4 @@ func randomImage(resp *http.Response) string {
 func random(min, max int) int {
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(max-min) + min
-}
-
-func dumpOut(r *http.Response) {
-	dump, err := httputil.DumpResponse(r, true)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println(string(dump[:]))
-}
-
-func jsonR(r *http.Response) {
-	var out bytes.Buffer
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	json.Indent(&out, body, "", "  ")
-	out.WriteTo(os.Stdout)
 }
