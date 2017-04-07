@@ -8,12 +8,18 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
-var accessToken = "j8PMTefgEHgStNfN77eH9+UkNFh4P0hGiLqttfp9GUumAn/dMbyEtHBDA6io7A7Qyrwf6xBSQ3Lu8nCBUdB8pA8IhSJ32Ary404fhnnjSu8QjKE6MZD82qzmIQBpcAKVfZojU1TNmcGst4ZUzk/WBQdB04t89/1O/w1cDnyilFU="
 var replyURL = "https://api.line.me/v2/bot/message/reply"
 
 func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
@@ -49,7 +55,7 @@ const lineURL = "https://api.line.me/v2/bot/message/reply"
 
 func lineRequest(verb string, body []byte) *http.Request {
 	req, _ := http.NewRequest(verb, replyURL, bytes.NewBuffer(body))
-	req.Header.Add("Authorization", "Bearer "+accessToken)
+	req.Header.Add("Authorization", "Bearer "+os.Getenv("line_access_token"))
 	req.Header.Add("Content-Type", "application/json")
 
 	return req

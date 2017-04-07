@@ -12,8 +12,6 @@ import (
 	"github.com/carlqt/linebot/line"
 )
 
-var secret = "2d7f970ca104a9252d8069e01ab525dd"
-
 func validateRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		headerToken := r.Header.Get("X-Line-Signature")

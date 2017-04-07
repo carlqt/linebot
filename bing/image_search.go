@@ -10,13 +10,9 @@ import (
 	"net/http/httputil"
 	"os"
 	"time"
-)
 
-// get all values
-// filter only images that has jpeg for encodingFormat
-// randomly select between 0 to the count of images
-// get thumbnail image
-// parse to remove \
+	"github.com/joho/godotenv"
+)
 
 type SearchValue struct {
 	Name         string `json:"name"`
@@ -27,12 +23,13 @@ type SearchResponse struct {
 	Values []SearchValue `json:"value"`
 }
 
-var key1 = "b3dc1ad1afea4cb6b89bcb5e2b97ea5a"
-var key2 = "d39700bc690a47c1ba487e35e09bfcd9"
-
 var searchURL = "https://api.cognitive.microsoft.com/bing/v5.0/images/search"
 
 func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
@@ -54,7 +51,7 @@ func bingImageRequest(verb, term string) *http.Request {
 	qs.Add("q", term)
 	qs.Add("size", "Small")
 	qs.Add("count", "35")
-	req.Header.Add("Ocp-Apim-Subscription-Key", key1)
+	req.Header.Add("Ocp-Apim-Subscription-Key", os.Getenv("bing_key1"))
 	req.Header.Add("User-Agent", "LineBot/1.0")
 	req.URL.RawQuery = qs.Encode()
 	return req
