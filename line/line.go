@@ -49,15 +49,7 @@ type Reply struct {
 	ReplyToken string         `json:"replyToken"`
 }
 
-func lineRequest(verb string, body []byte) *http.Request {
-	req, _ := http.NewRequest(verb, replyURL, bytes.NewBuffer(body))
-	req.Header.Add("Authorization", "Bearer "+os.Getenv("line_access_token"))
-	req.Header.Add("Content-Type", "application/json")
-
-	return req
-}
-
-func (r Reply) SendImage(imageURL string, replyToken string) {
+func SendImage(imageURL string, replyToken string) {
 	rMsg := newImageReplyMessage(imageURL)
 
 	reply := Reply{
@@ -67,21 +59,42 @@ func (r Reply) SendImage(imageURL string, replyToken string) {
 		},
 	}
 
-	marshal, err := json.Marshal(reply)
+	lineSendReply(reply)
+}
+
+func Send(msg string, replyToken string) {
+	rMsg := newReplyMessage(msg)
+
+	reply := Reply{
+		ReplyToken: replyToken,
+		Messages: []ReplyMessage{
+			rMsg,
+		},
+	}
+
+	lineSendReply(reply)
+}
+
+func lineSendReply(r Reply) {
+	m, err := json.Marshal(r)
 	if err != nil {
 		log.Println(err)
 	}
 
 	client := http.Client{}
-	req := lineRequest("POST", marshal)
+	req := lineRequest("POST", m)
 
-	resp, err := client.Do(req)
+	_, err = client.Do(req)
 	if err != nil {
 		log.Println(err)
 	}
+}
 
-	defer resp.Body.Close()
-	//dumpOut(resp)
+func newReplyMessage(t string) ReplyMessage {
+	return ReplyMessage{
+		Text: t,
+		Type: "text",
+	}
 }
 
 func newImageReplyMessage(u string) ReplyMessage {
@@ -90,4 +103,12 @@ func newImageReplyMessage(u string) ReplyMessage {
 		PreviewImageURL:    u,
 		Type:               "image",
 	}
+}
+
+func lineRequest(verb string, body []byte) *http.Request {
+	req, _ := http.NewRequest(verb, replyURL, bytes.NewBuffer(body))
+	req.Header.Add("Authorization", "Bearer "+os.Getenv("line_access_token"))
+	req.Header.Add("Content-Type", "application/json")
+
+	return req
 }

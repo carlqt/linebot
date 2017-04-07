@@ -9,15 +9,19 @@ import (
 )
 
 func lineReply(w http.ResponseWriter, r *http.Request) {
-	var reply line.Reply
 	ctx := r.Context()
 
 	text, _ := ctx.Value("text").(string)
 	q := getSearchText(text)
-	imageURL := bing.SearchImage(q)
+	imageURL, err := bing.SearchImage(q)
 
 	replyToken, _ := ctx.Value("replyToken").(string)
-	reply.SendImage(imageURL, replyToken)
+
+	if err != nil {
+		line.Send("Sorry, the term "+q+" has no results", replyToken)
+	} else {
+		line.SendImage(imageURL, replyToken)
+	}
 	w.WriteHeader(200)
 }
 

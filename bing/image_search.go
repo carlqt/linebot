@@ -2,6 +2,7 @@ package bing
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"math/rand"
 	"net/http"
@@ -30,8 +31,8 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
-func SearchImage(term string) string {
-	req := bingImageRequest("GET", term)
+func SearchImage(term string) (string, error) {
+	req := bingImageRequestBuilder("GET", term)
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -39,10 +40,14 @@ func SearchImage(term string) string {
 	}
 	defer resp.Body.Close()
 
-	return randomImage(resp)
+	if img := randomImage(resp); img == "" {
+		return "", errors.New("Sorry, " + term + " has no results")
+	} else {
+		return img, nil
+	}
 }
 
-func bingImageRequest(verb, term string) *http.Request {
+func bingImageRequestBuilder(verb, term string) *http.Request {
 	req, _ := http.NewRequest(verb, searchURL, nil)
 	qs := req.URL.Query()
 	qs.Add("q", term)
@@ -65,10 +70,10 @@ func randomImage(resp *http.Response) string {
 	values := searchResp.Values
 	randomInt := random(0, len(values))
 
-	if randomInt >= 0 {
-		return values[randomInt].ThumbnailURL
-	} else {
+	if randomInt < 0 {
 		return ""
+	} else {
+		return values[randomInt].ThumbnailURL
 	}
 }
 
