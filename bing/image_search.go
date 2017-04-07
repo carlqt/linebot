@@ -64,10 +64,20 @@ func randomImage(resp *http.Response) string {
 
 	values := searchResp.Values
 	randomInt := random(0, len(values))
-	return values[randomInt].ThumbnailURL
+
+	if randomInt >= 0 {
+		return values[randomInt].ThumbnailURL
+	} else {
+		return ""
+	}
 }
 
 func random(min, max int) int {
+	if max == 0 {
+		log.Println("0 search results")
+		return -1
+	}
+
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(max-min) + min
 }
