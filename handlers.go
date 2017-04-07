@@ -60,13 +60,16 @@ func replyHandler(next http.Handler) http.Handler {
 func lineReply(w http.ResponseWriter, r *http.Request) {
 	var reply line.Reply
 	reply, _ = r.Context().Value("replyStruct").(line.Reply)
+	text := reply.Events[0].Message.Text
 
-	if !keyWordMatch(reply.Events[0].Message.Text) {
+	if !keyWordMatch(text) {
 		return
 	}
+	q := getSearchText(text)
 
-	reply.SendImage("https://tse4.mm.bing.net/th?id=OIP.V65QWXWfUw6w9trOmGdCegCwCx&pid=Api")
-	bing.SearchImage("cry")
+	imageURL := bing.SearchImage(q)
+	//reply.SendImage("https://tse4.mm.bing.net/th?id=OIP.V65QWXWfUw6w9trOmGdCegCwCx&pid=Api")
+	reply.SendImage(imageURL)
 	w.WriteHeader(200)
 }
 
@@ -79,4 +82,8 @@ func keyWordMatch(text string) bool {
 	matched := rx.MatchString(strings.ToLower(text))
 
 	return matched
+}
+
+func getSearchText(q string) string {
+	return strings.Replace(q, "/pic ", "", 1)
 }

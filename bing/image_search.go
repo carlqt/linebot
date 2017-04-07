@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"time"
 )
 
 // get all values
@@ -16,20 +18,34 @@ import (
 // get thumbnail image
 // parse to remove \
 
+type SearchValue struct {
+	Name         string `json:"name"`
+	ThumbnailURL string `json:"thumbnailUrl"`
+}
+
+type SearchResponse struct {
+	Values []SearchValue `json:"value"`
+}
+
 var key1 = "b3dc1ad1afea4cb6b89bcb5e2b97ea5a"
 var key2 = "d39700bc690a47c1ba487e35e09bfcd9"
 
 var searchURL = "https://api.cognitive.microsoft.com/bing/v5.0/images/search"
 
-func SearchImage(term string) {
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
+
+func SearchImage(term string) string {
 	req := bingImageRequest("GET", term)
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
 	}
+	defer resp.Body.Close()
 
-	jsonR(resp)
+	return randomImage(resp)
 }
 
 func bingImageRequest(verb, term string) *http.Request {
@@ -44,6 +60,24 @@ func bingImageRequest(verb, term string) *http.Request {
 	return req
 }
 
+func randomImage(resp *http.Response) string {
+	var searchResp SearchResponse
+
+	err := json.NewDecoder(resp.Body).Decode(&searchResp)
+	if err != nil {
+		log.Println(err)
+	}
+
+	values := searchResp.Values
+	randomInt := random(0, len(values))
+	return values[randomInt].ThumbnailURL
+}
+
+func random(min, max int) int {
+	rand.Seed(time.Now().Unix())
+	return rand.Intn(max-min) + min
+}
+
 func dumpOut(r *http.Response) {
 	dump, err := httputil.DumpResponse(r, true)
 	if err != nil {
@@ -52,6 +86,7 @@ func dumpOut(r *http.Response) {
 
 	log.Println(string(dump[:]))
 }
+
 func jsonR(r *http.Response) {
 	var out bytes.Buffer
 	body, err := ioutil.ReadAll(r.Body)

@@ -13,6 +13,10 @@ import (
 var accessToken = "j8PMTefgEHgStNfN77eH9+UkNFh4P0hGiLqttfp9GUumAn/dMbyEtHBDA6io7A7Qyrwf6xBSQ3Lu8nCBUdB8pA8IhSJ32Ary404fhnnjSu8QjKE6MZD82qzmIQBpcAKVfZojU1TNmcGst4ZUzk/WBQdB04t89/1O/w1cDnyilFU="
 var replyURL = "https://api.line.me/v2/bot/message/reply"
 
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
+
 type Reply struct {
 	Events []Event `json:"events"`
 }
