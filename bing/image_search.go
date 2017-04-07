@@ -83,6 +83,7 @@ func random(min, max int) int {
 		return -1
 	}
 
+	log.Printf("%d images", max)
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(max-min) + min
 }
