@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -53,6 +54,7 @@ func bingImageRequestBuilder(verb, term string) *http.Request {
 	qs.Add("q", term)
 	qs.Add("size", "Small")
 	qs.Add("count", "35")
+	qs.Add("X-Search-ClientIP", ipAddr())
 	req.Header.Add("Ocp-Apim-Subscription-Key", os.Getenv("bing_key1"))
 	req.Header.Add("User-Agent", "LineBot/1.0")
 	req.URL.RawQuery = qs.Encode()
@@ -86,4 +88,22 @@ func random(min, max int) int {
 	log.Printf("%d images", max)
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(max-min) + min
+}
+
+func ipAddr() string {
+	var ipAddr string
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, a := range addrs {
+		if ipnet, ok := a.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				ipAddr = ipnet.IP.String()
+			}
+		}
+	}
+
+	return ipAddr
 }
