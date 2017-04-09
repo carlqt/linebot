@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/carlqt/linebot/devexcuse"
 	"github.com/pressly/chi"
 	"github.com/pressly/chi/middleware"
 )
@@ -17,7 +16,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	log.Println(devexcuse.Excuse())
+	// log.Println(devexcuse.Excuse())
 
 	r.Route("/line", func(r chi.Router) {
 		r.Use(validateRequest)

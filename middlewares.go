@@ -63,7 +63,7 @@ func willReply(w line.WebhookResponse) bool {
 }
 
 func keyWordMatch(text string) bool {
-	rx, err := regexp.Compile(`^\/pic`)
+	rx, err := regexp.Compile(`^\/pic|^\/devexcuse`)
 	if err != nil {
 		log.Println(err)
 	}
