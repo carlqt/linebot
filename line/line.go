@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
 
 	"github.com/joho/godotenv"
 )
@@ -13,9 +14,13 @@ import (
 var replyURL = "https://api.line.me/v2/bot/message/reply"
 
 func init() {
-	err := godotenv.Load()
+	usr, _ := user.Current()
+	err := godotenv.Load(usr.HomeDir + "/.env")
 	if err != nil {
-		log.Fatal(err)
+		err = godotenv.Load(".env")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
